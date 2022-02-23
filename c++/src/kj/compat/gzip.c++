@@ -148,10 +148,10 @@ GzipOutputStream::GzipOutputStream(OutputStream& inner, int compressionLevel)
 GzipOutputStream::GzipOutputStream(OutputStream& inner, decltype(DECOMPRESS))
   : GzipOutputStream(kj::heap<BufferedOutputStreamWrapper>(inner)) {}
 
-GzipOutputStream::GzipOutputStream(OutputStream& inner, int compressionLevel)
+GzipOutputStream::GzipOutputStream(BufferedOutputStream& inner, int compressionLevel)
   : inner(inner), buffer(nullptr), ctx(compressionLevel) {}
 
-GzipOutputStream::GzipOutputStream(OutputStream& inner, decltype(DECOMPRESS))
+GzipOutputStream::GzipOutputStream(BufferedOutputStream& inner, decltype(DECOMPRESS))
   : inner(inner), buffer(nullptr), ctx(nullptr) {}
 
 GzipOutputStream::GzipOutputStream(kj::Own<BufferedOutputStream> buf, int compressionLevel)
