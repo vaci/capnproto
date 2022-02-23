@@ -72,6 +72,10 @@ public:
 
   GzipOutputStream(OutputStream& inner, int compressionLevel = Z_DEFAULT_COMPRESSION);
   GzipOutputStream(OutputStream& inner, decltype(DECOMPRESS));
+
+  GzipOutputStream(BufferedOutputStream& inner, int compressionLevel = Z_DEFAULT_COMPRESSION);
+  GzipOutputStream(BufferedOutputStream& inner, decltype(DECOMPRESS));
+
   ~GzipOutputStream() noexcept(false);
   KJ_DISALLOW_COPY(GzipOutputStream);
 
@@ -83,7 +87,11 @@ public:
   }
 
 private:
-  OutputStream& inner;
+  GzipOutputStream(Own<BufferedOutputStream>, int compressionLevel);
+  GzipOutputStream(Own<BufferedOutputStream>);
+
+  BufferedOutputStream& inner;
+  Maybe<Own<BufferedOutputStream>> buffer;
   _::GzipOutputContext ctx;
 
   void pump(int flush);

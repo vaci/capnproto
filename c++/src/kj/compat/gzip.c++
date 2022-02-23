@@ -143,10 +143,22 @@ size_t GzipInputStream::readImpl(
 // =======================================================================================
 
 GzipOutputStream::GzipOutputStream(OutputStream& inner, int compressionLevel)
-    : inner(inner), ctx(compressionLevel) {}
+  : GzipOutputStream(kj::heap<BufferedOutputStreamWrapper>(inner), compressionLevel) {}
 
 GzipOutputStream::GzipOutputStream(OutputStream& inner, decltype(DECOMPRESS))
-    : inner(inner), ctx(nullptr) {}
+  : GzipOutputStream(kj::heap<BufferedOutputStreamWrapper>(inner)) {}
+
+GzipOutputStream::GzipOutputStream(OutputStream& inner, int compressionLevel)
+  : inner(inner), buffer(nullptr), ctx(compressionLevel) {}
+
+GzipOutputStream::GzipOutputStream(OutputStream& inner, decltype(DECOMPRESS))
+  : inner(inner), buffer(nullptr), ctx(nullptr) {}
+
+GzipOutputStream::GzipOutputStream(kj::Own<BufferedOutputStream> buf, int compressionLevel)
+  : inner(*buf), buffer(kj::mv(buf)), ctx(compressionLevel) {}
+
+GzipOutputStream::GzipOutputStream(kj::Own<BufferedOutputStream> buf)
+  : inner(*buf), buffer(kj::mv(buf)), ctx(nullptr) {}
 
 GzipOutputStream::~GzipOutputStream() noexcept(false) {
   pump(Z_FINISH);
