@@ -405,7 +405,7 @@ kj::Promise<void> MessageStream::writeMessages(kj::ArrayPtr<MessageAndFds> messa
 }
 
 kj::Promise<void> MessageStream::writeMessages(kj::ArrayPtr<MessageBuilder*> builders) {
-  auto messages = kj::heapArray<kj::ArrayPtr<const kj::ArrayPtr<const word>>>(builders.size());
+  KJ_STACK_ARRAY(kj::ArrayPtr<const kj::ArrayPtr<const word>>, messages, builders.size(), 16, 256);
   for (auto i : kj::indices(builders)) {
     messages[i] = builders[i]->getSegmentsForOutput();
   }
