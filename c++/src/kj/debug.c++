@@ -174,14 +174,11 @@ enum DescriptionStyle {
   SYSCALL
 };
 
-static String makeDescriptionImpl(DescriptionStyle style, const char* code, int errorNumber,
-                                  const char* sysErrorString, const char* macroArgs,
-                                  ArrayPtr<String> argValues) {
-  KJ_STACK_ARRAY(ArrayPtr<const char>, argNames, argValues.size(), 8, 64);
-
+static void parseArguments(const char* start,
+                           ArrayPtr<ArrayPtr<const char>> argNames,
+                           ArrayPtr<String> argValues) {
   if (argValues.size() > 0) {
     size_t index = 0;
-    const char* start = macroArgs;
     while (isspace(*start)) ++start;
     const char* pos = start;
     uint depth = 0;
@@ -220,9 +217,16 @@ static String makeDescriptionImpl(DescriptionStyle style, const char* code, int 
     if (index != argValues.size()) {
       getExceptionCallback().logMessage(LogSeverity::ERROR, __FILE__, __LINE__, 0,
           str("Failed to parse logging macro args into ",
-              argValues.size(), " names: ", macroArgs, '\n'));
+              argValues.size(), " names: ", start, '\n'));
     }
   }
+}
+
+static String makeDescriptionImpl(DescriptionStyle style, const char* code, int errorNumber,
+                                  const char* sysErrorString, const char* macroArgs,
+                                  ArrayPtr<String> argValues) {
+  KJ_STACK_ARRAY(ArrayPtr<const char>, argNames, argValues.size(), 8, 64);
+  parseArguments(macroArgs, argNames, argValues);
 
   if (style == SYSCALL) {
     // Strip off leading "foo = " from code, since callers will sometimes write things like:
